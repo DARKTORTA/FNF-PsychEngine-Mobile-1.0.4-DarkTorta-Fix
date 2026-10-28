@@ -138,7 +138,7 @@ class Hitbox extends MobileInputManager implements IMobileControls
 				if (hintTween != null)
 					hintTween.cancel();
 
-				hintTween = FlxTween.tween(hint, {alpha: ClientPrefs.data.controlsAlpha}, ClientPrefs.data.controlsAlpha / 100, {
+				hintTween = FlxTween.tween(hint, {alpha: ClientPrefs.data.controlsAlpha}, 0.05, {
 					ease: FlxEase.circInOut,
 					onComplete: (twn:FlxTween) -> hintTween = null
 				});
@@ -151,7 +151,7 @@ class Hitbox extends MobileInputManager implements IMobileControls
 				if (hintTween != null)
 					hintTween.cancel();
 
-				hintTween = FlxTween.tween(hint, {alpha: 0.00001}, ClientPrefs.data.controlsAlpha / 10, {
+				hintTween = FlxTween.tween(hint, {alpha: 0.0}, 0.05, {
 					ease: FlxEase.circInOut,
 					onComplete: (twn:FlxTween) -> hintTween = null
 				});
@@ -165,7 +165,7 @@ class Hitbox extends MobileInputManager implements IMobileControls
 
 		hint.immovable = hint.multiTouch = true;
 		hint.solid = hint.moves = false;
-		hint.alpha = 0.00001;
+		hint.alpha = 0.0;
 		hint.antialiasing = ClientPrefs.data.antialiasing;
 		hint.color = Color;
 		#if FLX_DEBUG
