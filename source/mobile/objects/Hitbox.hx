@@ -123,50 +123,11 @@ class Hitbox extends MobileInputManager implements IMobileControls
 	private function createHint(X:Float, Y:Float, Width:Int, Height:Int, Color:Int = 0xFFFFFF):TouchButton
 	{
 		var hint = new TouchButton(X, Y);
-		// Inicializamos el arreglo con 3 elementos para que MobileData.setButtonsColors() no crashee
-		hint.statusAlphas = [0.0, ClientPrefs.data.controlsAlpha, ClientPrefs.data.controlsAlpha];
-		hint.statusIndicatorType = NONE;
 		hint.loadGraphic(createHintGraphic(Width, Height));
-
-		if (ClientPrefs.data.hitboxType != "Hidden")
-		{
-			var hintTween:FlxTween = null;
-
-			hint.onDown.callback = function()
-			{
-				onButtonDown.dispatch(hint);
-
-				if (hintTween != null)
-					hintTween.cancel();
-
-				hintTween = FlxTween.tween(hint, {alpha: ClientPrefs.data.controlsAlpha}, 0.05, {
-					ease: FlxEase.circInOut,
-					onComplete: (twn:FlxTween) -> hintTween = null
-				});
-			}
-
-			hint.onOut.callback = hint.onUp.callback = function()
-			{
-				onButtonUp.dispatch(hint);
-
-				if (hintTween != null)
-					hintTween.cancel();
-
-				hintTween = FlxTween.tween(hint, {alpha: 0.0}, 0.05, {
-					ease: FlxEase.circInOut,
-					onComplete: (twn:FlxTween) -> hintTween = null
-				});
-			}
-		}
-		else
-		{
-			hint.onDown.callback = () -> onButtonDown.dispatch(hint);
-			hint.onOut.callback = hint.onUp.callback = () -> onButtonUp.dispatch(hint);
-		}
-
+		hint.onDown.callback = () -> onButtonDown.dispatch(hint);
+		hint.onUp.callback = () -> onButtonUp.dispatch(hint);
 		hint.immovable = hint.multiTouch = true;
 		hint.solid = hint.moves = false;
-		hint.alpha = 0.0;
 		hint.antialiasing = ClientPrefs.data.antialiasing;
 		hint.color = Color;
 		#if FLX_DEBUG
