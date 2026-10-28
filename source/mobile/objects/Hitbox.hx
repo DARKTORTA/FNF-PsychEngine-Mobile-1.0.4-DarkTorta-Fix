@@ -123,7 +123,8 @@ class Hitbox extends MobileInputManager implements IMobileControls
 	private function createHint(X:Float, Y:Float, Width:Int, Height:Int, Color:Int = 0xFFFFFF):TouchButton
 	{
 		var hint = new TouchButton(X, Y);
-		hint.statusAlphas = [];
+		// Inicializamos el arreglo con 3 elementos para que MobileData.setButtonsColors() no crashee
+		hint.statusAlphas = [0.0, ClientPrefs.data.controlsAlpha, ClientPrefs.data.controlsAlpha];
 		hint.statusIndicatorType = NONE;
 		hint.loadGraphic(createHintGraphic(Width, Height));
 
