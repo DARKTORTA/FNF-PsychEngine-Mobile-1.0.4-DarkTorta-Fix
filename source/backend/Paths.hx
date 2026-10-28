@@ -1,4 +1,4 @@
-package backend;
+Package backend;
 
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.graphics.frames.FlxAtlasFrames;
@@ -231,23 +231,27 @@ class Paths
 		return sound(key + FlxG.random.int(min, max), modsAllowed);
 
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
+	
 	static public function image(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
 	{
-		key = Language.getFileTranslation('images/$key') + '.png';
-		var bitmap:BitmapData = null;
-		if (currentTrackedAssets.exists(key))
+		var formattedKey:String = Language.getFileTranslation('images/$key') + '.png';
+		var file:String = getPath(formattedKey, IMAGE, parentFolder, true);
+		
+		if (currentTrackedAssets.exists(file))
 		{
-			localTrackedAssets.push(key);
-			return currentTrackedAssets.get(key);
+			localTrackedAssets.push(file);
+			return currentTrackedAssets.get(file);
 		}
-		return cacheBitmap(key, parentFolder, bitmap, allowGPU);
+		return cacheBitmap(formattedKey, parentFolder, null, allowGPU, file);
 	}
 
-	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true):FlxGraphic
+	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true, ?file:String = null):FlxGraphic
 	{
+		if (file == null)
+			file = getPath(key, IMAGE, parentFolder, true);
+
 		if (bitmap == null)
 		{
-			var file:String = getPath(key, IMAGE, parentFolder, true);
 			#if MODS_ALLOWED
 			if (FileSystem.exists(file))
 				bitmap = BitmapData.fromFile(file);
@@ -276,12 +280,12 @@ class Paths
 			bitmap.readable = true;
 		}
 
-		var graph:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		var graph:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, file);
 		graph.persist = true;
 		graph.destroyOnNoUse = false;
 
-		currentTrackedAssets.set(key, graph);
-		localTrackedAssets.push(key);
+		currentTrackedAssets.set(file, graph);
+		localTrackedAssets.push(file);
 		return graph;
 	}
 
@@ -661,4 +665,4 @@ class Paths
 		return dirs.map(dir -> dir.substr(dir.lastIndexOf("/") + 1));
 		#end
 	}
-}
+	}
