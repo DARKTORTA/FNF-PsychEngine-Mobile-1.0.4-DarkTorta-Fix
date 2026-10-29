@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2025 Mobile Porting Team
  *
@@ -148,7 +147,7 @@ class Hitbox extends MobileInputManager implements IMobileControls
 				if (hintTween != null)
 					hintTween.cancel();
 
-				hintTween = FlxTween.tween(hint, {alpha: 0.00001}, ClientPrefs.data.controlsAlpha / 10, {
+				hintTween = FlxTween.tween(hint, {alpha: 0}, ClientPrefs.data.controlsAlpha / 10, {
 					ease: FlxEase.circInOut,
 					onComplete: (twn:FlxTween) -> hintTween = null
 				});
@@ -162,7 +161,7 @@ class Hitbox extends MobileInputManager implements IMobileControls
 
 		hint.immovable = hint.multiTouch = true;
 		hint.solid = hint.moves = false;
-		hint.alpha = 0.00001;
+		hint.alpha = 0;
 		hint.canChangeLabelAlpha = false;
 		hint.label.antialiasing = hint.antialiasing = ClientPrefs.data.antialiasing;
 		hint.color = Color;
@@ -221,4 +220,3 @@ class Hitbox extends MobileInputManager implements IMobileControls
 		return FlxG.bitmap.add(bitmap);
 	}
 		}
-		
