@@ -120,8 +120,8 @@ class Hitbox extends MobileInputManager implements IMobileControls
 		else
 			hint.label.offset.y += (hint.height - hint.label.height) / 2;
 
-		hint.labelStatusDiff = 0.00001;
-		hint.label.alpha = 0.00001;
+		hint.labelStatusDiff = 0;
+		hint.label.alpha = 0;
 		hint.label.visible = false;
 
 		if (ClientPrefs.data.hitboxType != "Hidden")
