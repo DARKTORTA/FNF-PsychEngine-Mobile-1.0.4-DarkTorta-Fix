@@ -66,17 +66,37 @@ jobs:
 
       - name: Compile
         run: |
-          echo "1er build - genera export (va a fallar en core:1.15.0 pero deja Haxe listo)"
+          echo "=== 1er build Haxe (crea export) ==="
           haxelib run lime build ${{ inputs.buildArgs }} || true
-          echo "Parchando core a 1.10.1..."
-          find export -type f -name "*.gradle" -exec sed -i.bak "s/androidx.core:core:[0-9.]*'/androidx.core:core:1.10.1'/g" {} \; || true
-          find export -type f -name "*.gradle" -exec sed -i.bak 's/androidx.core:core:[0-9.]*"/androidx.core:core:1.10.1"/g' {} \; || true
-          find export -type f -name "*.gradle" -exec sed -i.bak "s/1.15.0/1.10.1/g; s/1.13.1/1.10.1/g; s/1.12.0/1.10.1/g; s/1.12.1/1.10.1/g; s/1.11.0/1.10.1/g" {} \; || true
-          find export -name "*.bak" -delete || true
-          echo "2do build - solo Gradle, sin regenerar Haxe..."
-          cd export/release/android
-          chmod +x gradlew
-          ./gradlew :app:assembleRelease --stacktrace || ./gradlew assembleRelease --stacktrace
+          
+          echo "=== Parchando las 5 librerias a versiones que soportan SDK 33 ==="
+          find export -type f -name "*.gradle" | while read f; do
+            sed -i.bak "s/androidx.core:core:[0-9.]*'/androidx.core:core:1.10.1'/g" "$f" || true
+            sed -i.bak 's/androidx.core:core:[0-9.]*"/androidx.core:core:1.10.1"/g' "$f" || true
+            sed -i.bak "s/androidx.activity:activity:[0-9.]*'/androidx.activity:activity:1.7.2'/g" "$f" || true
+            sed -i.bak 's/androidx.activity:activity:[0-9.]*"/androidx.activity:activity:1.7.2"/g' "$f" || true
+            sed -i.bak "s/androidx.transition:transition:[0-9.]*'/androidx.transition:transition:1.4.1'/g" "$f" || true
+            sed -i.bak 's/androidx.transition:transition:[0-9.]*"/androidx.transition:transition:1.4.1"/g' "$f" || true
+            sed -i.bak "s/androidx.annotation:annotation-experimental:[0-9.]*'/androidx.annotation:annotation-experimental:1.3.1'/g" "$f" || true
+            sed -i.bak 's/androidx.annotation:annotation-experimental:[0-9.]*"/androidx.annotation:annotation-experimental:1.3.1"/g' "$f" || true
+            sed -i.bak "s/1.15.0/1.10.1/g; s/1.8.0/1.7.2/g; s/1.5.0/1.4.1/g; s/1.4.1/1.3.1/g" "$f" || true
+          done
+          
+          echo "=== 2do build solo Gradle (sin regenerar Haxe) ==="
+          if [ -f "export/release/android/gradlew" ]; then
+            chmod +x export/release/android/gradlew
+            cd export/release/android
+            ./gradlew :app:assembleRelease --stacktrace || ./gradlew :app:assembleRelease
+            cd ../../..
+          elif [ -f "export/release/android/app/gradlew" ]; then
+            chmod +x export/release/android/app/gradlew
+            cd export/release/android
+            ./gradlew :app:assembleRelease --stacktrace || ./gradlew :app:assembleRelease
+            cd ../../..
+          else
+            echo "No se encontro gradlew, reintentando lime build parcheado"
+            haxelib run lime build ${{ inputs.buildArgs }}
+          fi
 
       - name: Make IPA
         if: inputs.name == 'iOS'
