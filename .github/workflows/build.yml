@@ -61,20 +61,20 @@ jobs:
           haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
           haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
-          # SDK 33 original que si compila
           yes | sdkmanager --licenses || true
           sdkmanager "build-tools;33.0.2" "platforms;android-33" || true
 
       - name: Compile
         run: |
-          # 1er intento - compila Haxe y crea el proyecto gradle (puede fallar en core:1.15.0)
+          # 1er intento - solo para crear export/release/android
           haxelib run lime build ${{ inputs.buildArgs }} || true
-          # Parche: forzar androidx.core a 1.10.1 que si funciona con SDK 33 y no pide 35
-          echo "Patching androidx.core version..."
-          find export -type f -name "*.gradle" -exec sed -i "s/androidx.core:core:[0-9.]*'/androidx.core:core:1.10.1'/g" {} \; || true
-          find export -type f -name "*.gradle" -exec sed -i 's/androidx.core:core:[0-9.]*"/androidx.core:core:1.10.1"/g' {} \; || true
-          find export -type f -name "*.gradle" -exec sed -i "s/1.15.0/1.10.1/g; s/1.13.1/1.10.1/g; s/1.12.0/1.10.1/g; s/1.12.1/1.10.1/g" {} \; || true
-          # 2do intento - ya con core 1.10.1
+          echo "Patching androidx.core to 1.10.1 (compatible con Mac + Linux)..."
+          # sed compatible con Mac (darwin) y Linux
+          find export -type f -name "*.gradle" -exec sed -i.bak "s/androidx.core:core:[0-9.]*'/androidx.core:core:1.10.1'/g" {} \; || true
+          find export -type f -name "*.gradle" -exec sed -i.bak 's/androidx.core:core:[0-9.]*"/androidx.core:core:1.10.1"/g' {} \; || true
+          find export -type f -name "*.gradle" -exec sed -i.bak "s/1.15.0/1.10.1/g; s/1.13.1/1.10.1/g; s/1.12.0/1.10.1/g; s/1.12.1/1.10.1/g" {} \; || true
+          find export -name "*.bak" -delete || true
+          # 2do intento - ya parchado
           haxelib run lime build ${{ inputs.buildArgs }}
 
       - name: Make IPA
