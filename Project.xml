@@ -206,4 +206,7 @@
 	<icon path="art/icons/icon32.png" size='32'/>
 	<icon path="art/icons/icon64.png" size='64'/>
 	<icon path="art/icons/iconOG.png" />
+
+	<!-- FIX GRADLE - para que no falle processReleaseMainManifest -->
+	<config:android minimum-sdk-version="21" target-sdk-version="33" gradle-version="7.6.3" gradle-plugin="7.4.2" />
 </project>
