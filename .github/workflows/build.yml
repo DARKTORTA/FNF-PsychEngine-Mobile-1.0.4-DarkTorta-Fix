@@ -35,11 +35,11 @@ jobs:
         uses: actions/checkout@main
 
       - name: Setup Java 17 (FIX major version 65)
+        if: inputs.name == 'Android'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-          architecture: arm64
 
       - name: Setup Haxe
         uses: krdlab/setup-haxe@master
@@ -64,7 +64,6 @@ jobs:
       - name: Configure Android
         if: inputs.name == 'Android'
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_arm64 || export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           java -version
           haxelib run lime config ANDROID_SDK $ANDROID_HOME
           haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
@@ -75,19 +74,17 @@ jobs:
 
       - name: Compile
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_arm64 || export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           java -version
           echo "=== 1er build Haxe (crea export) ==="
           haxelib run lime build ${{ inputs.buildArgs }} || true
 
-          echo "=== Parchando con resolutionStrategy (metodo que usa Plus Engine / P-Slice) ==="
+          echo "=== Parchando con resolutionStrategy ==="
           python3 << 'PY'
           import os, pathlib, re
-          # Busca todos los build.gradle de app
           for root in pathlib.Path("export").rglob("build.gradle"):
               if "app" in str(root):
                   text = root.read_text(encoding="utf-8", errors="ignore")
-                  if "androidx.core:core" in text and "resolutionStrategy" in text:
+                  if "resolutionStrategy" in text and "androidx.core:core:1.10.1" in text:
                       continue
                   patch = """
 configurations.all {
@@ -102,14 +99,12 @@ configurations.all {
     }
 }
 """
-                  # Inserta despues de "android {"
                   if "android {" in text:
                       text = text.replace("android {", patch + "\nandroid {", 1)
                   else:
                       text = patch + "\n" + text
                   root.write_text(text, encoding="utf-8")
                   print(f"Parcheado: {root}")
-                  # Tambien baja versiones sueltas por si acaso
                   text2 = root.read_text()
                   text2 = re.sub(r"androidx\.core:core:[0-9.]+", "androidx.core:core:1.10.1", text2)
                   text2 = re.sub(r"androidx\.core:core-ktx:[0-9.]+", "androidx.core:core-ktx:1.10.1", text2)
@@ -121,7 +116,7 @@ configurations.all {
                   root.write_text(text2, encoding="utf-8")
           PY
 
-          echo "=== 2do build solo Gradle (sin regenerar Haxe) ==="
+          echo "=== 2do build solo Gradle ==="
           GRADLEW=$(find export -name "gradlew" -type f | head -n 1)
           if [ -n "$GRADLEW" ]; then
             echo "Gradlew en: $GRADLEW"
@@ -130,7 +125,6 @@ configurations.all {
             cd "$DIR"
             ./gradlew :app:assembleRelease --no-daemon || ./gradlew assembleRelease --no-daemon
           else
-            echo "No gradlew, reintento lime"
             haxelib run lime build ${{ inputs.buildArgs }}
           fi
 
