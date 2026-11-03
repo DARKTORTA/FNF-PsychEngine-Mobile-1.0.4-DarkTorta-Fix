@@ -61,9 +61,9 @@ jobs:
           haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
           haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
-          # Fix for Gradle 7.6.3 + SDK 33 compatibility
+          # FIX SDK 35 - androidx.core:1.15.0 requires 35, gradle 7.4.2 max 33
           yes | sdkmanager --licenses || true
-          sdkmanager "build-tools;33.0.2" "platforms;android-33" || true
+          sdkmanager "build-tools;35.0.0" "platforms;android-35" || true
 
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
