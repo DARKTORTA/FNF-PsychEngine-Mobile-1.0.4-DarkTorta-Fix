@@ -66,16 +66,17 @@ jobs:
 
       - name: Compile
         run: |
-          # 1er intento - solo para crear export/release/android
+          echo "1er build - genera export (va a fallar en core:1.15.0 pero deja Haxe listo)"
           haxelib run lime build ${{ inputs.buildArgs }} || true
-          echo "Patching androidx.core to 1.10.1 (compatible con Mac + Linux)..."
-          # sed compatible con Mac (darwin) y Linux
+          echo "Parchando core a 1.10.1..."
           find export -type f -name "*.gradle" -exec sed -i.bak "s/androidx.core:core:[0-9.]*'/androidx.core:core:1.10.1'/g" {} \; || true
           find export -type f -name "*.gradle" -exec sed -i.bak 's/androidx.core:core:[0-9.]*"/androidx.core:core:1.10.1"/g' {} \; || true
-          find export -type f -name "*.gradle" -exec sed -i.bak "s/1.15.0/1.10.1/g; s/1.13.1/1.10.1/g; s/1.12.0/1.10.1/g; s/1.12.1/1.10.1/g" {} \; || true
+          find export -type f -name "*.gradle" -exec sed -i.bak "s/1.15.0/1.10.1/g; s/1.13.1/1.10.1/g; s/1.12.0/1.10.1/g; s/1.12.1/1.10.1/g; s/1.11.0/1.10.1/g" {} \; || true
           find export -name "*.bak" -delete || true
-          # 2do intento - ya parchado
-          haxelib run lime build ${{ inputs.buildArgs }}
+          echo "2do build - solo Gradle, sin regenerar Haxe..."
+          cd export/release/android
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease --stacktrace || ./gradlew assembleRelease --stacktrace
 
       - name: Make IPA
         if: inputs.name == 'iOS'
