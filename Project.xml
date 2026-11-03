@@ -207,6 +207,6 @@
 	<icon path="art/icons/icon64.png" size='64'/>
 	<icon path="art/icons/iconOG.png" />
 
-	<!-- FIX GRADLE - para que no falle processReleaseMainManifest -->
-	<config:android minimum-sdk-version="21" target-sdk-version="33" gradle-version="7.6.3" gradle-plugin="7.4.2" />
+	<!-- FIX SDK 35 - core:1.15.0 requiere 35, plugin 7.4.2 solo llega a 33 -->
+	<config:android minimum-sdk-version="21" target-sdk-version="35" gradle-version="8.7.3" gradle-plugin="8.3.2" />
 </project>
