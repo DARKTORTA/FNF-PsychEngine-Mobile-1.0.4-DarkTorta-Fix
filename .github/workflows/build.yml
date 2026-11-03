@@ -34,13 +34,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@main
 
-      - name: Setup Java 17
-        if: inputs.name == 'Android'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
       - name: Setup Haxe
         uses: krdlab/setup-haxe@master
         with:
@@ -64,52 +57,13 @@ jobs:
       - name: Configure Android
         if: inputs.name == 'Android'
         run: |
-          java -version
           haxelib run lime config ANDROID_SDK $ANDROID_HOME
           haxelib run lime config ANDROID_NDK_ROOT ${{ steps.setup-ndk.outputs.ndk-path }}
-          haxelib run lime config JAVA_HOME $JAVA_HOME
+          haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
-          yes | sdkmanager --licenses || true
-          sdkmanager "build-tools;33.0.2" "platforms;android-33" || true
 
       - name: Compile
-        run: |
-          java -version
-          echo "=== 1er build Haxe ==="
-          haxelib run lime build ${{ inputs.buildArgs }} || true
-          echo "=== Parchando androidx ==="
-          python3 - << 'PY'
-          import pathlib, re
-          patch_text = "configurations.all {\n    resolutionStrategy {\n        force 'androidx.core:core:1.10.1'\n        force 'androidx.core:core-ktx:1.10.1'\n        force 'androidx.activity:activity:1.7.2'\n        force 'androidx.transition:transition:1.4.1'\n        force 'androidx.annotation:annotation-experimental:1.3.1'\n        force 'androidx.appcompat:appcompat:1.6.1'\n        force 'androidx.appcompat:appcompat-resources:1.6.1'\n    }\n}\n"
-          for p in pathlib.Path("export").rglob("build.gradle"):
-              if "app" in str(p):
-                  t = p.read_text(errors="ignore")
-                  if "androidx.core:core:1.10.1" in t and "resolutionStrategy" in t:
-                      continue
-                  if "android {" in t:
-                      t = t.replace("android {", patch_text + "\nandroid {", 1)
-                  else:
-                      t = patch_text + "\n" + t
-                  t = re.sub(r"androidx\.core:core:[0-9.]+", "androidx.core:core:1.10.1", t)
-                  t = re.sub(r"androidx\.core:core-ktx:[0-9.]+", "androidx.core:core-ktx:1.10.1", t)
-                  t = re.sub(r"androidx\.activity:activity:[0-9.]+", "androidx.activity:activity:1.7.2", t)
-                  t = re.sub(r"androidx\.transition:transition:[0-9.]+", "androidx.transition:transition:1.4.1", t)
-                  t = re.sub(r"androidx\.annotation:annotation-experimental:[0-9.]+", "androidx.annotation:annotation-experimental:1.3.1", t)
-                  t = re.sub(r"androidx\.appcompat:appcompat:[0-9.]+", "androidx.appcompat:appcompat:1.6.1", t)
-                  t = re.sub(r"androidx\.appcompat:appcompat-resources:[0-9.]+", "androidx.appcompat:appcompat-resources:1.6.1", t)
-                  p.write_text(t)
-                  print(f"Parcheado {p}")
-          PY
-          echo "=== 2do build Gradle ==="
-          GRADLEW=$(find export -name "gradlew" -type f | head -n 1)
-          if [ -n "$GRADLEW" ]; then
-            chmod +x "$GRADLEW"
-            DIR=$(dirname "$GRADLEW")
-            cd "$DIR"
-            ./gradlew :app:assembleRelease --no-daemon || ./gradlew assembleRelease --no-daemon
-          else
-            haxelib run lime build ${{ inputs.buildArgs }}
-          fi
+        run: haxelib run lime build ${{ inputs.buildArgs }}
 
       - name: Make IPA
         if: inputs.name == 'iOS'
@@ -128,4 +82,3 @@ jobs:
           name: ${{ inputs.artifactName }}
           path: ${{ inputs.artifactPath }}
           if-no-files-found: error
-          
